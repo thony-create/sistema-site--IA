@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking de Vendedores - Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="layout">
+        {% include 'components/sidebar.html' %}
+        
+        <div class="layout__main">
+            {% include 'components/header.html' %}
+            
+            <div class="layout__content">
+                <div class="container">
+                    <h1>
+                        <i class="fas fa-chart-bar"></i> Ranking de Vendedores
+                    </h1>
+                    
+                    <div style="background: var(--card); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden;">
+                        {% if ranking %}
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: var(--card-light); border-bottom: 1px solid #e2e8f0;">
+                                        <th style="padding: 16px; text-align: left; font-weight: 600; color: var(--text);">Posição</th>
+                                        <th style="padding: 16px; text-align: left; font-weight: 600; color: var(--text);">Vendedor</th>
+                                        <th style="padding: 16px; text-align: center; font-weight: 600; color: var(--text);">Vendas</th>
+                                        <th style="padding: 16px; text-align: right; font-weight: 600; color: var(--text);">Faturamento</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for idx, vendor in ranking %}
+                                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                                            <td style="padding: 16px;">
+                                                <span style="background: #e0e7ff; color: #4f46e5; padding: 4px 8px; border-radius: 4px; font-weight: 600;">
+                                                    {{ loop.index }}
+                                                </span>
+                                            </td>
+                                            <td style="padding: 16px; font-weight: 500; color: var(--text);">{{ vendor[1] }}</td>
+                                            <td style="padding: 16px; text-align: center; color: var(--text-secondary);">{{ vendor[2] or 0 }}</td>
+                                            <td style="padding: 16px; text-align: right; color: #16a34a; font-weight: 600;">R$ {{ "%.2f"|format(vendor[3] or 0) }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <div style="padding: 60px 20px; text-align: center;">
+                                <p style="color: var(--text-secondary);">Sem dados de vendas.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

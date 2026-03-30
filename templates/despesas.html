@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financeiro - Cognix</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo/cognix_icon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="layout">
+        {% include 'components/sidebar.html' %}
+        
+        <div class="layout__main">
+            {% include 'components/header.html' %}
+            
+            <div class="layout__content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h1 style="margin: 0;">Gestão Financeira</h1>
+                <div class="card" style="padding: 12px 24px; background: var(--bg-accent); border: 1px solid var(--primary);">
+                    <span style="font-size: 0.85rem; color: var(--text-secondary); display: block;">Total do Mês ({{ mes_atual }})</span>
+                    <span style="font-size: 1.5rem; font-weight: 700; color: var(--danger);">R$ {{ "%.2f"|format(total_mes) }}</span>
+                </div>
+            </div>
+
+            <div class="grid" style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px;">
+                <!-- Formulário de Adição -->
+                <div class="card">
+                    <h3 style="margin-bottom: 20px;"><i class="fas fa-plus-circle" style="color: var(--primary); margin-right: 10px;"></i>Nova Despesa</h3>
+                    <form action="{{ url_for('despesas.adicionar_despesa') }}" method="POST">
+                        <div class="form-group">
+                            <label class="form-label">Descrição</label>
+                            <input type="text" name="descricao" class="form-input" placeholder="Ex: Aluguel, Internet, Fornecedor X" required>
+                        </div>
+                        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <label class="form-label">Valor (R$)</label>
+                                <input type="number" name="valor" step="0.01" class="form-input" placeholder="0.00" required>
+                            </div>
+                            <div>
+                                <label class="form-label">Data</label>
+                                <input type="date" name="data" class="form-input" value="{{ hoje_str }}" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Categoria</label>
+                            <select name="categoria" class="form-select" required>
+                                <option value="Operacional">Operacional</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Pessoal">Pessoal</option>
+                                <option value="Infraestrutura">Infraestrutura</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn--primary btn--block" style="margin-top: 10px;">
+                            <i class="fas fa-save"></i> Registrar Despesa
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Lista de Despesas -->
+                <div class="card">
+                    <h3 style="margin-bottom: 20px;"><i class="fas fa-list" style="color: var(--primary); margin-right: 10px;"></i>Registros Recentes</h3>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th>Categoria</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if despesas %}
+                                    {% for despesa in despesas %}
+                                    <tr>
+                                        <td>{{ despesa.data_despesa }}</td>
+                                        <td style="font-weight: 500;">{{ despesa.descricao }}</td>
+                                        <td><span class="urgencia-badge" style="background: var(--bg-accent); color: var(--text-primary); border: 1px solid var(--border-primary); font-size: 0.7rem;">{{ despesa.categoria }}</span></td>
+                                        <td style="color: var(--danger); font-weight: 600;">R$ {{ "%.2f"|format(despesa.valor) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-muted);">Nenhuma despesa registrada este mês.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cognix Dashboard</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo/cognix_icon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+</head>
+<body>
+    <div class="layout">
+        {% include 'components/sidebar.html' %}
+        
+        <div class="layout__main">
+            {% include 'components/header.html' %}
+            
+            <div class="layout__content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h1 style="margin: 0;">Dashboard</h1>
+                    <div class="dashboard-actions" style="display: flex; gap: 10px;">
+                        <a href="{{ url_for('gerar_relatorio', tipo='semanal') }}" class="btn btn--danger btn--sm">
+                            <i class="fas fa-file-pdf"></i> PDF Semanal
+                        </a>
+                        <a href="{{ url_for('gerar_relatorio', tipo='mensal') }}" class="btn btn--danger btn--sm">
+                            <i class="fas fa-file-pdf"></i> PDF Mensal
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Banner de Destaque para IA -->
+                <div class="ai-banner animate-slideInDown">
+                    <div class="ai-banner__content">
+                        <div>
+                            <h2 class="ai-banner__title">
+                                <i class="fas fa-lightbulb"></i> Tire dúvidas com a Zyra!
+                            </h2>
+                            <p class="ai-banner__subtitle">
+                                Faça perguntas sobre vendas, estoque, produtos e obtenha insights da Zyra em tempo real.
+                            </p>
+                        </div>
+                        <a href="{{ url_for('chat.index') }}" class="btn btn--light ai-banner__button">
+                            <i class="fas fa-arrow-right"></i> Abrir Zyra
+                        </a>
+                    </div>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="alerts mb-20" style="margin-bottom: var(--spacing-lg);">
+                            {% for category, message in messages %}
+                                <div class="alert alert--{{ category }}"><i class="fas fa-info-circle alert__icon"></i><span class="alert__content">{{ message }}</span></div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Alertas Proativos da Zyra -->
+                {% if alertas_zyra %}
+                <section class="page-section animate-slideInDown" style="margin-bottom: var(--spacing-2xl);">
+                    <div style="display: flex; align-items: center; margin-bottom: var(--spacing-md);">
+                        <div class="page-section__title-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h2 class="page-section__title" style="margin-bottom: 0;">Alertas da Zyra</h2>
+                    </div>
+                    <div style="display: grid; gap: var(--spacing-md); grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                        {% for alerta in alertas_zyra %}
+                        <div class="alert alert--{{ alerta.tipo }}" style="margin-bottom: 0; border-left-width: 4px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                            <i class="fas {{ alerta.icone }} alert__icon"></i>
+                            <span class="alert__content">{{ alerta.mensagem }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+
+                <!-- Recomendações da Zyra -->
+                {% if recomendacoes_zyra %}
+                <section class="page-section animate-slideInDown" style="margin-bottom: var(--spacing-2xl);">
+                    <div style="display: flex; align-items: center; margin-bottom: var(--spacing-md);">
+                        <div class="page-section__title-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--primary);">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h2 class="page-section__title" style="margin-bottom: 0;">Recomendações da Zyra</h2>
+                    </div>
+                    <div style="display: grid; gap: var(--spacing-md); grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                        {% for rec in recomendacoes_zyra %}
+                        <div class="alert alert--success" style="margin-bottom: 0; border-left-width: 4px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                            <i class="fas {{ rec.icone }} alert__icon"></i>
+                            <span class="alert__content">{{ rec.mensagem }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+
+                <!-- Cards de Indicadores -->
+                <div class="cards-indicadores">
+                    <div class="card-indicator">
+                        <div class="card-indicator__header">
+                            <div></div>
+                            <div class="card-indicator__icon-wrapper">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                        </div>
+                        <p class="card-indicator__label">Faturamento Hoje</p>
+                        <h2 class="card-indicator__value">R$ {{ "%.2f"|format(faturamento_dia) }}</h2>
+                    </div>
+
+                    <div class="card-indicator">
+                        <div class="card-indicator__header">
+                            <div></div>
+                            <div class="card-indicator__icon-wrapper">
+                                <i class="fas fa-arrow-trend-up"></i>
+                            </div>
+                        </div>
+                        <p class="card-indicator__label">Faturamento Semana</p>
+                        <h2 class="card-indicator__value">R$ {{ "%.2f"|format(faturamento_semana) }}</h2>
+                    </div>
+
+                    <div class="card-indicator">
+                        <div class="card-indicator__header">
+                            <div></div>
+                            <div class="card-indicator__icon-wrapper">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                        </div>
+                        <p class="card-indicator__label">Faturamento Mês</p>
+                        <h2 class="card-indicator__value">R$ {{ "%.2f"|format(faturamento_mes) }}</h2>
+                    </div>
+
+                    <div class="card-indicator">
+                        <div class="card-indicator__header">
+                            <div></div>
+                            <div class="card-indicator__icon-wrapper" style="background: rgba(16, 185, 129, 0.1); color: var(--primary);">
+                                <i class="fas fa-hand-holding-usd"></i>
+                            </div>
+                        </div>
+                        <p class="card-indicator__label">Lucro do Mês</p>
+                        <h2 class="card-indicator__value" style="color: var(--primary);">R$ {{ "%.2f"|format(lucro_mes) }}</h2>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">Despesas: R$ {{ "%.2f"|format(total_despesas) }}</p>
+                    </div>
+
+                    <div class="card-indicator">
+                        <div class="card-indicator__header">
+                            <div></div>
+                            <div class="card-indicator__icon-wrapper" style="background: rgba(59, 130, 246, 0.1); color: var(--info);">
+                                <i class="fas fa-bullseye"></i>
+                            </div>
+                        </div>
+                        <p class="card-indicator__label">Meta Mensal ({{ progresso_meta|round|int }}%)</p>
+                        <div style="width: 100%; height: 8px; background: var(--bg-accent); border-radius: 4px; margin: 10px 0; overflow: hidden; border: 1px solid var(--border-primary);">
+                            <div style="width: {{ progresso_meta }}%; height: 100%; background: var(--info); transition: width 1s ease-out;"></div>
+                        </div>
+                        <p style="font-size: 0.75rem; color: var(--text-muted);">Meta: R$ {{ "%.2f"|format(meta_valor) }}</p>
+                    </div>
+
+                    <div class="card-indicator">
+                        <div class="card-indicator__header">
+                            <div></div>
+                            <div class="card-indicator__icon-wrapper">
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <p class="card-indicator__label">Produto Top</p>
+                        <h2 class="card-indicator__value">{% if produto_top %}{{ produto_top[0] }}{% else %}N/A{% endif %}</h2>
+                    </div>
+                </div>
+
+                <!-- Insights de IA - Carregado Dinamicamente -->
+                <section class="page-section">
+                    <h2 class="page-section__title">
+                        <div class="page-section__title-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        Insights da Zyra
+                    </h2>
+                    <div class="insights-loading">
+                        <p>Analisando seus dados...</p>
+                    </div>
+                    <div class="insights-grid" id="insights-container" style="display: none;">
+                        <!-- Insights serão inseridos aqui via JavaScript -->
+                    </div>
+                    <button onclick="recarregarInsights()" class="btn btn--primary">
+                        <i class="fas fa-sync-alt"></i> Atualizar Insights
+                    </button>
+                </section>
+
+                <!-- Produtos com Estoque Baixo -->
+                <section class="page-section">
+                    <h2 class="page-section__title">
+                        <div class="page-section__title-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        Estoque Baixo
+                    </h2>
+                    {% if produtos_baixos %}
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Produto</th>
+                                        <th>Quantidade</th>
+                                        <th>Preço</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for produto in produtos_baixos %}
+                                        <tr>
+                                            <td>{{ produto[1] }}</td>
+                                            <td><span class="badge--danger">{{ produto[2] }}</span></td>
+                                            <td>R$ {{ "%.2f"|format(produto[3]) }}</td>
+                                            <td>
+                                                <a href="{{ url_for('editar_produto', produto_id=produto[0]) }}" class="btn btn--sm btn--ghost">Editar</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state__icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <p class="empty-state__text">Todos os produtos têm estoque adequado!</p>
+                        </div>
+                    {% endif %}
+                </section>
+
+                <!-- Gráficos -->
+                <section class="page-section">
+                    <h2 class="page-section__title">
+                        <div class="page-section__title-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        Análise de Vendas
+                    </h2>
+                    <div class="grid">
+                        <div class="card">
+                            <h3 style="margin-bottom: var(--spacing-lg);">Vendas Últimos 7 Dias</h3>
+                            <canvas id="vendas-chart"></canvas>
+                        </div>
+
+                        <div class="card">
+                            <h3 style="margin-bottom: var(--spacing-lg);">Fluxo de Caixa (7d)</h3>
+                            <canvas id="fluxo-caixa-chart"></canvas>
+                        </div>
+
+                        <div class="card">
+                            <h3 style="margin-bottom: var(--spacing-lg);">Top 5 Produtos</h3>
+                            <canvas id="top-produtos-chart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Suporte Rápido IA (Versão Compacta) -->
+                <section class="page-section">
+                    <div class="quick-support-card">
+                        <div class="quick-support-header">
+                            <div class="quick-support-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div>
+                                <h3 class="quick-support-title">Pergunte para a Zyra</h3>
+                                <p class="quick-support-subtitle">Dúvida rápida ou análise completa do seu negócio.</p>
+                            </div>
+                        </div>
+
+                        <div class="quick-support-input-group">
+                            <input type="text" id="quick-chat-input" placeholder="Ex: Quanto vendemos hoje?" onkeypress="handleQuickChatKey(event)" />
+                            <button onclick="enviarDuvidaRapida()" class="btn btn--primary" id="btn-enviar-rapido">
+                                <i class="fas fa-paper-plane"></i> Enviar
+                            </button>
+                        </div>
+
+                        <div id="quick-answer-container" style="display: none;" class="animate-fadeIn">
+                            <div class="quick-answer-bubble">
+                                <div class="quick-answer-header">
+                                    <span><i class="fas fa-comment-dots"></i> Zyra responde:</span>
+                                    <button class="btn-close-small" onclick="fecharRespostaRapida()">&times;</button>
+                                </div>
+                                <div id="quick-answer-text"></div>
+                            </div>
+                        </div>
+
+                        <div class="quick-support-footer">
+                            <div class="quick-chips">
+                                <button onclick="setQuickInput('Quanto vendemos hoje?')" class="chip">Vendas hoje</button>
+                                <button onclick="setQuickInput('Estoque baixo?')" class="chip">Estoque baixo</button>
+                                <button onclick="setQuickInput('Produto mais vendido')" class="chip">Mais vendido</button>
+                            </div>
+                            <a href="{{ url_for('chat.index') }}" class="btn btn--sm btn--ghost">
+                                <i class="fas fa-external-link-alt"></i> Abrir Zyra Completa
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Preparar dados dos gráficos
+        const dadosGraficos = {{ dados_graficos | tojson }};
+
+        // Gráfico de Vendas
+        const vendas7dias = dadosGraficos.vendas_7dias;
+        const ctxVendas = document.getElementById('vendas-chart').getContext('2d');
+        new Chart(ctxVendas, {
+            type: 'line',
+            data: {
+                labels: vendas7dias.map(d => d.data),
+                datasets: [{
+                    label: 'Faturamento (R$)',
+                    data: vendas7dias.map(d => d.valor),
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Gráfico de Fluxo de Caixa (Vendas vs Despesas)
+        const despesas7dias = dadosGraficos.despesas_7dias;
+        const ctxFluxo = document.getElementById('fluxo-caixa-chart').getContext('2d');
+        new Chart(ctxFluxo, {
+            type: 'bar',
+            data: {
+                labels: vendas7dias.map(d => d.data),
+                datasets: [
+                    {
+                        label: 'Vendas (R$)',
+                        data: vendas7dias.map(d => d.valor),
+                        backgroundColor: '#10b981', // Emerald
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Despesas (R$)',
+                        data: despesas7dias.map(d => d.valor),
+                        backgroundColor: '#ef4444', // Danger
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Gráfico de Top Produtos
+        const topProdutos = dadosGraficos.top_produtos;
+        const ctxProdutos = document.getElementById('top-produtos-chart').getContext('2d');
+        new Chart(ctxProdutos, {
+            type: 'bar',
+            data: {
+                labels: topProdutos.map(p => p.nome),
+                datasets: [{
+                    label: 'Quantidade Vendida',
+                    data: topProdutos.map(p => p.quantidade),
+                    backgroundColor: [
+                        'rgba(102, 126, 234, 0.8)',
+                        'rgba(118, 75, 162, 0.8)',
+                        'rgba(255, 107, 107, 0.8)',
+                        'rgba(52, 211, 153, 0.8)',
+                        'rgba(250, 204, 21, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // --- LÓGICA DO SUPORTE RÁPIDO IA ---
+        function setQuickInput(text) {
+            const input = document.getElementById('quick-chat-input');
+            input.value = text;
+            input.focus();
+        }
+
+        function handleQuickChatKey(e) {
+            if (e.key === 'Enter') enviarDuvidaRapida();
+        }
+
+        function fecharRespostaRapida() {
+            document.getElementById('quick-answer-container').style.display = 'none';
+        }
+
+        function enviarDuvidaRapida() {
+            const input = document.getElementById('quick-chat-input');
+            const pergunta = input.value.trim();
+            const btn = document.getElementById('btn-enviar-rapido');
+            const container = document.getElementById('quick-answer-container');
+            const answerText = document.getElementById('quick-answer-text');
+
+            if (!pergunta) return;
+
+            // LÓGICA DE REDIRECIONAMENTO (SMART ROUTING)
+            // Se for muito longa (> 80 caracteres), redireciona direto
+            if (pergunta.length > 80) {
+                window.location.href = "{{ url_for('chat.index') }}?q=" + encodeURIComponent(pergunta);
+                return;
+            }
+
+            // Estado de carregamento
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            fetch("{{ url_for('chat.enviar_pergunta') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pergunta })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.erro) throw new Error(data.erro);
+
+                // Se a resposta for longa ou pedir para abrir o chat completo, redirecionamos
+                // Ou se for um fallback genérico
+                if (data.resposta.length > 300 || data.resposta.includes('Não entendi exatamente')) {
+                   answerText.innerHTML = `
+                        <p style="margin-bottom: 10px;">Esta dúvida exige uma análise mais detalhada.</p>
+                        <a href="{{ url_for('chat.index') }}?q=${encodeURIComponent(pergunta)}" class="btn btn--sm btn--primary">
+                            Ir para Assistente Completa
+                        </a>
+                   `;
+                } else {
+                    answerText.innerHTML = `<p>${data.resposta}</p>`;
+                }
+                
+                container.style.display = 'block';
+                input.value = '';
+            })
+            .catch(err => {
+                console.error(err);
+                answerText.innerHTML = '<p style="color: var(--danger);">Ocorreu um erro. Tente abrir a Zyra Completa.</p>';
+                container.style.display = 'block';
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar';
+            });
+        }
+
+        // ========== CARREGAR INSIGHTS DE IA ==========
+        function carregarInsights() {
+            const container = document.getElementById('insights-container');
+            const loading = document.querySelector('.insights-loading');
+            
+            fetch('/api/ia/insights')
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    container.style.display = 'grid';
+                    container.innerHTML = '';
+                    
+                    // Mapeamento de cores por urgência
+                    const coresUrgencia = {
+                        'critica': '#ff4444',
+                        'alta': '#ff9500',
+                        'media': '#4a90e2',
+                        'baixa': '#7cb342'
+                    };
+                    
+                    // Mapeamento de cores por tipo
+                    const tipos = {
+                        'success': { bg: 'rgba(76, 175, 80, 0.1)', border: '#4caf50' },
+                        'warning': { bg: 'rgba(255, 152, 0, 0.1)', border: '#ff9800' },
+                        'danger': { bg: 'rgba(244, 67, 54, 0.1)', border: '#f44336' },
+                        'info': { bg: 'rgba(33, 150, 243, 0.1)', border: '#2196f3' }
+                    };
+                    
+                    if (data.insights && data.insights.length > 0) {
+                        data.insights.forEach(insight => {
+                            const card = document.createElement('div');
+                            const tipo = insight.tipo || 'info';
+                            const cor = tipos[tipo] || tipos['info'];
+                            const urgencia = insight.urgencia || 'media';
+                            
+                            let html = `
+                                <div class="insight-card insight-${tipo}">
+                                    <div class="insight-header">
+                                        <h3>${escapeHtml(insight.titulo)}</h3>
+                                        <span class="urgencia-badge" data-urgencia="${urgencia}">
+                                            ${urgencia}
+                                        </span>
+                                    </div>
+                                    <p>${escapeHtml(insight.descricao)}</p>
+                            `;
+                            
+                            if (insight.valor) {
+                                html += `<div class="insight-valor">${insight.valor}</div>`;
+                            }
+                            
+                            html += '</div>';
+                            card.innerHTML = html;
+                            container.appendChild(card);
+                        });
+                    } else {
+                        container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">Nenhum insight disponível no momento.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar insights:', error);
+                    loading.innerHTML = '<p style="color: #d32f2f;">Erro ao carregar insights. Tente novamente.</p>';
+                });
+        }
+
+        // Função para recarregar insights manualmente
+        function recarregarInsights() {
+            const loading = document.querySelector('.insights-loading');
+            const container = document.getElementById('insights-container');
+            loading.style.display = 'block';
+            container.style.display = 'none';
+            carregarInsights();
+        }
+
+        // Carregar insights ao carregar a página
+        window.addEventListener('load', function() {
+            setTimeout(carregarInsights, 500);
+            updateThemeIcon();
+        });
+
+        /**
+         * Toggle dropdown menu
+         */
+        function toggleDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) {
+                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            }
+        }
+
+        /**
+         * Close dropdown when clicking elsewhere
+         */
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown && !event.target.closest('.dropdown-menu')) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        /**
+         * Update theme icon based on current theme
+         */
+        function updateThemeIcon() {
+            const themeBtn = document.querySelector('[onclick="toggleDarkMode()"] i');
+            if (themeBtn) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                themeBtn.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        }
+
+        /**
+         * Listen for theme changes
+         */
+        document.addEventListener('themechange', function(e) {
+            updateThemeIcon();
+        });
+
+        /**
+         * Send question to AI chat
+         */
+        function enviarPergunta() {
+            const input = document.getElementById('pergunta-input');
+            const pergunta = input.value.trim();
+            
+            if (!pergunta) {
+                alert('Digite uma pergunta');
+                return;
+            }
+
+            // Here you can add logic to send the question to the chat API
+            // For now, redirect to the chat page
+            window.location.href = "{{ url_for('chat.index') }}?q=" + encodeURIComponent(pergunta);
+        }
+    </script>
+            </div>  <!-- Fecha layout__content -->
+        </div>   <!-- Fecha layout__main -->
+    </div>      <!-- Fecha layout -->
+</body>
+</html>

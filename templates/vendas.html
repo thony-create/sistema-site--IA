@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendas - Cognix</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo/cognix_icon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="layout">
+        {% include 'components/sidebar.html' %}
+        
+        <div class="layout__main">
+            {% include 'components/header.html' %}
+            
+            <div class="layout__content">
+                <div class="container">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                        <h1>
+                            <i class="fas fa-cash-register"></i> Histórico de Vendas
+                        </h1>
+                        <a href="{{ url_for('nova_venda') }}" class="btn btn--primary">
+                            <i class="fas fa-plus"></i> Nova Venda
+                        </a>
+                    </div>
+                    
+                    <div class="table-wrapper">
+                        {% if vendas %}
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Data</th>
+                                        <th>Itens</th>
+                                        <th style="text-align: right;">Valor Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for venda in vendas %}
+                                        <tr style="cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='var(--card-light)'" onmouseout="this.style.background=''">
+                                            <td style="font-weight: 600; color: var(--primary);">
+                                                #{{ venda[0] }}
+                                            </td>
+                                            <td style="color: var(--text-secondary);">
+                                                {{ venda[1] | default('--') }}
+                                            </td>
+                                            <td>
+                                                <span style="background: rgba(34,197,94,0.15); color: var(--primary); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.03em;">
+                                                    {{ venda[3] }} item{{ 'ns' if venda[3] != 1 else '' }}
+                                                </span>
+                                            </td>
+                                            <td style="text-align: right; color: var(--text); font-weight: 600; font-size: 1rem;">
+                                                R$ {{ "%.2f"|format(venda[2]) }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            
+                            <!-- Paginação -->
+                            {% if total_paginas > 1 %}
+                                <div style="padding: 20px; text-align: center; border-top: 1px solid var(--border);">
+                                    {% if pagina_atual > 1 %}
+                                        <a href="{{ url_for('vendas', pagina=pagina_atual-1) }}" class="btn btn--secondary" style="text-decoration: none;">← Anterior</a>
+                                    {% endif %}
+                                    
+                                    <span style="margin: 0 12px; color: var(--text-secondary);">
+                                        Página {{ pagina_atual }} de {{ total_paginas }}
+                                    </span>
+                                    
+                                    {% if pagina_atual < total_paginas %}
+                                        <a href="{{ url_for('vendas', pagina=pagina_atual+1) }}" class="btn btn--secondary" style="text-decoration: none;">Próxima →</a>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div style="padding: 60px 20px; text-align: center;">
+                                <div style="font-size: 48px; margin-bottom: 12px; color: var(--text-muted);"><i class="fas fa-money-bill-wave"></i></div>
+                                <h3 style="color: var(--text); margin: 0 0 8px 0;">Nenhuma venda registrada</h3>
+                                <p style="color: var(--text-secondary); margin: 0;">Registre sua primeira venda agora.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

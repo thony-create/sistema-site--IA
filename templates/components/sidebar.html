@@ -1,0 +1,91 @@
+<!-- Sidebar de Navegação -->
+<aside class="layout__sidebar">
+    <div class="sidebar__logo">
+        <a href="{{ url_for('dashboard') }}" class="sidebar__brand">
+            <svg class="sidebar__brand-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Outer circular arrow -->
+                <path d="M20 4C11.163 4 4 11.163 4 20s7.163 16 16 16 16-7.163 16-16" stroke="#10b981" stroke-width="3.5" stroke-linecap="round"/>
+                <!-- Arrowhead -->
+                <path d="M30 4l6 4-4 6" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- Inner arc -->
+                <path d="M14 20a6 6 0 0 0 10.5 4" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+            <span class="sidebar__brand-text">Cognix</span>
+        </a>
+    </div>
+
+    <nav class="sidebar">
+        <div class="sidebar__section">
+            <a href="{{ url_for('dashboard') }}" class="sidebar__item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                <i class="sidebar__icon fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{{ url_for('chat') }}" class="sidebar__item {% if request.endpoint == 'chat' %}active{% endif %}">
+                <i class="sidebar__icon fas fa-robot"></i>
+                <span>Zyra</span>
+            </a>
+
+            <a href="{{ url_for('estoque') }}" class="sidebar__item {% if request.endpoint == 'estoque' %}active{% endif %}">
+                <i class="sidebar__icon fas fa-box"></i>
+                <span>Estoque</span>
+            </a>
+
+            <a href="{{ url_for('vendas') }}" class="sidebar__item {% if request.endpoint == 'vendas' %}active{% endif %}">
+                <i class="sidebar__icon fas fa-credit-card"></i>
+                <span>Vendas</span>
+            </a>
+
+            <a href="{{ url_for('clientes') }}" class="sidebar__item {% if request.endpoint == 'clientes' %}active{% endif %}">
+                <i class="sidebar__icon fas fa-users"></i>
+                <span>Clientes</span>
+            </a>
+        </div>
+
+        {% if session.get('user_tipo') in ['admin', 'gerente'] %}
+            <div class="sidebar__section">
+                <div class="sidebar__section-title">Gerenciamento</div>
+                <a href="{{ url_for('funcionarios') }}" class="sidebar__item {% if request.endpoint in ['funcionarios', 'adicionar_funcionario', 'editar_funcionario', 'ranking_funcionarios'] %}active{% endif %}">
+                    <i class="sidebar__icon fas fa-users-cog"></i>
+                    <span>Funcionários</span>
+                </a>
+
+                <a href="{{ url_for('historico_logs') }}" class="sidebar__item {% if request.endpoint == 'historico_logs' %}active{% endif %}">
+                    <i class="sidebar__icon fas fa-list"></i>
+                    <span>Histórico</span>
+                </a>
+
+                <a href="{{ url_for('relatorios') }}" class="sidebar__item {% if request.endpoint == 'relatorios' %}active{% endif %}">
+                    <i class="sidebar__icon fas fa-file-alt"></i>
+                    <span>Relatórios</span>
+                </a>
+            </div>
+        {% endif %}
+
+        {% if session.get('user_tipo') == 'admin' %}
+            <div class="sidebar__section">
+                <div class="sidebar__section-title">Administração</div>
+                <a href="{{ url_for('admin.listar_usuarios') }}" class="sidebar__item {% if 'admin' in request.endpoint %}active{% endif %}">
+                    <i class="sidebar__icon fas fa-shield-alt"></i>
+                    <span>Gerenciar Usuários</span>
+                </a>
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="sidebar__item {% if request.endpoint == 'admin.admin_dashboard' %}active{% endif %}">
+                    <i class="sidebar__icon fas fa-cog"></i>
+                    <span>Configurações</span>
+                </a>
+            </div>
+        {% endif %}
+
+        <div style="padding: var(--spacing-lg) 0; border-top: 1px solid var(--gray-200); margin-top: auto;">
+            <a href="{{ url_for('auth.perfil') }}" class="sidebar__item">
+                <i class="sidebar__icon fas fa-user-circle"></i>
+                <span>Meu Perfil</span>
+            </a>
+
+            <a href="{{ url_for('auth.logout') }}" class="sidebar__item" style="color: var(--danger);">
+                <i class="sidebar__icon fas fa-sign-out-alt"></i>
+                <span>Sair</span>
+            </a>
+        </div>
+    </nav>
+</aside>

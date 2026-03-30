@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inteligência de Clientes - Cognix</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo/cognix_icon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+</head>
+<body>
+    <div class="layout">
+        {% include 'components/sidebar.html' %}
+        
+        <div class="layout__main">
+            {% include 'components/header.html' %}
+            
+            <div class="layout__content">
+                <!-- Título + Ações -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-xl);">
+                    <h1 style="margin: 0;">
+                        <i class="fas fa-users-gear" style="color: var(--primary); margin-right: 8px;"></i>
+                        Inteligência de Clientes
+                    </h1>
+                    <a href="{{ url_for('chat.index') }}?q=quais%20meus%20melhores%20clientes" class="btn btn--primary btn--sm">
+                        <i class="fas fa-robot"></i> Perguntar à Zyra
+                    </a>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="ci-kpis">
+                    <div class="ci-kpi">
+                        <div class="ci-kpi__icon" style="background: rgba(59, 130, 246, 0.1); color: var(--info);">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="ci-kpi__body">
+                            <span class="ci-kpi__label">Total de Clientes</span>
+                            <span class="ci-kpi__value">{{ total_clientes }}</span>
+                        </div>
+                    </div>
+                    <div class="ci-kpi">
+                        <div class="ci-kpi__icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <div class="ci-kpi__body">
+                            <span class="ci-kpi__label">Clientes VIP</span>
+                            <span class="ci-kpi__value" style="color: var(--success);">{{ total_vips }}</span>
+                        </div>
+                    </div>
+                    <div class="ci-kpi">
+                        <div class="ci-kpi__icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">
+                            <i class="fas fa-user-clock"></i>
+                        </div>
+                        <div class="ci-kpi__body">
+                            <span class="ci-kpi__label">Inativos</span>
+                            <span class="ci-kpi__value" style="color: var(--danger);">{{ total_inativos }}</span>
+                        </div>
+                    </div>
+                    <div class="ci-kpi">
+                        <div class="ci-kpi__icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
+                            <i class="fas fa-gauge-high"></i>
+                        </div>
+                        <div class="ci-kpi__body">
+                            <span class="ci-kpi__label">Score Médio</span>
+                            <span class="ci-kpi__value">{{ score_medio }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Insights de Clientes -->
+                {% if insights_clientes %}
+                <section class="ci-insights-section">
+                    <div class="ci-insights-header">
+                        <div class="page-section__title-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--primary);">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h2 style="margin: 0; font-size: 1.15rem;">Insights de Clientes</h2>
+                    </div>
+                    <div class="ci-insights-grid">
+                        {% for insight in insights_clientes %}
+                        <div class="ci-insight-card ci-insight-card--{{ insight.tipo }}">
+                            <div class="ci-insight-card__icon">
+                                <i class="fas {{ insight.icone }}"></i>
+                            </div>
+                            <div class="ci-insight-card__body">
+                                <h4 class="ci-insight-card__title">{{ insight.titulo }}</h4>
+                                <p class="ci-insight-card__msg">{{ insight.mensagem }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+
+                <!-- Filtros -->
+                <div class="ci-filters">
+                    <span class="ci-filters__label">Filtrar:</span>
+                    <a href="{{ url_for('clientes') }}" 
+                       class="ci-filter-btn {{ 'ci-filter-btn--active' if filtro_atual == 'todos' }}">
+                        <i class="fas fa-layer-group"></i> Todos
+                    </a>
+                    <a href="{{ url_for('clientes', filtro='vip') }}" 
+                       class="ci-filter-btn ci-filter-btn--vip {{ 'ci-filter-btn--active' if filtro_atual == 'vip' }}">
+                        <i class="fas fa-crown"></i> VIP
+                    </a>
+                    <a href="{{ url_for('clientes', filtro='regular') }}" 
+                       class="ci-filter-btn ci-filter-btn--regular {{ 'ci-filter-btn--active' if filtro_atual == 'regular' }}">
+                        <i class="fas fa-user-check"></i> Regular
+                    </a>
+                    <a href="{{ url_for('clientes', filtro='esporadico') }}" 
+                       class="ci-filter-btn ci-filter-btn--esporadico {{ 'ci-filter-btn--active' if filtro_atual == 'esporadico' }}">
+                        <i class="fas fa-user"></i> Esporádico
+                    </a>
+                    <a href="{{ url_for('clientes', filtro='inativo') }}" 
+                       class="ci-filter-btn ci-filter-btn--inativo {{ 'ci-filter-btn--active' if filtro_atual == 'inativo' }}">
+                        <i class="fas fa-user-slash"></i> Inativo
+                    </a>
+                </div>
+
+                <!-- Tabela de Clientes -->
+                <div class="ci-table-wrapper">
+                    {% if clientes %}
+                    <table class="table ci-table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Classificação</th>
+                                <th>Score</th>
+                                <th>Compras</th>
+                                <th style="text-align: right;">Valor Total</th>
+                                <th style="text-align: right;">Ticket Médio</th>
+                                <th>Última Compra</th>
+                                <th>Insight</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cliente in clientes %}
+                            <tr class="ci-row ci-row--{{ cliente.classificacao|lower|replace('á','a')|replace(' ','') }}">
+                                <!-- Nome -->
+                                <td class="ci-cell-name">
+                                    <div class="ci-avatar ci-avatar--{{ cliente.classificacao|lower|replace('á','a')|replace(' ','') }}">
+                                        {{ cliente.nome[0]|upper }}
+                                    </div>
+                                    <span>{{ cliente.nome }}</span>
+                                </td>
+
+                                <!-- Badge classificação -->
+                                <td>
+                                    {% if cliente.classificacao == 'VIP' %}
+                                        <span class="ci-badge ci-badge--vip"><i class="fas fa-crown"></i> VIP</span>
+                                    {% elif cliente.classificacao == 'Regular' %}
+                                        <span class="ci-badge ci-badge--regular"><i class="fas fa-user-check"></i> Regular</span>
+                                    {% elif cliente.classificacao == 'Esporádico' %}
+                                        <span class="ci-badge ci-badge--esporadico"><i class="fas fa-user"></i> Esporádico</span>
+                                    {% else %}
+                                        <span class="ci-badge ci-badge--inativo"><i class="fas fa-user-slash"></i> Inativo</span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Score barra visual -->
+                                <td>
+                                    <div class="ci-score">
+                                        <span class="ci-score__number">{{ cliente.score }}</span>
+                                        <div class="ci-score__bar">
+                                            <div class="ci-score__fill ci-score__fill--{{ 'hot' if cliente.score >= 80 else ('warm' if cliente.score >= 50 else ('cool' if cliente.score >= 20 else 'cold')) }}"
+                                                 style="width: {{ cliente.score }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Compras -->
+                                <td>
+                                    <span class="ci-compras">{{ cliente.total_compras }}</span>
+                                </td>
+
+                                <!-- Valor Total -->
+                                <td style="text-align: right; font-weight: 600;">
+                                    R$ {{ "%.2f"|format(cliente.valor_total) }}
+                                </td>
+
+                                <!-- Ticket Médio -->
+                                <td style="text-align: right; color: var(--text-secondary);">
+                                    R$ {{ "%.2f"|format(cliente.ticket_medio) }}
+                                </td>
+
+                                <!-- Última Compra -->
+                                <td>
+                                    <span class="ci-recencia {{ 'ci-recencia--danger' if cliente.dias_ultima_compra > 30 else ('ci-recencia--warning' if cliente.dias_ultima_compra > 14 else '') }}">
+                                        {% if cliente.dias_ultima_compra == 0 %}
+                                            Hoje
+                                        {% elif cliente.dias_ultima_compra == 1 %}
+                                            Ontem
+                                        {% else %}
+                                            {{ cliente.dias_ultima_compra }}d atrás
+                                        {% endif %}
+                                    </span>
+                                </td>
+
+                                <!-- Insight -->
+                                <td>
+                                    {% if cliente.insight %}
+                                    <span class="ci-insight-tip" title="{{ cliente.insight }}">
+                                        <i class="fas fa-lightbulb"></i>
+                                        <span class="ci-insight-tip__text">{{ cliente.insight }}</span>
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="ci-empty">
+                        <div class="ci-empty__icon"><i class="fas fa-users"></i></div>
+                        {% if filtro_atual != 'todos' %}
+                            <h3>Nenhum cliente nesta categoria</h3>
+                            <p>Tente remover o filtro para ver todos os clientes.</p>
+                            <a href="{{ url_for('clientes') }}" class="btn btn--primary btn--sm" style="margin-top: 12px;">
+                                <i class="fas fa-layer-group"></i> Ver Todos
+                            </a>
+                        {% else %}
+                            <h3>Nenhum cliente registrado</h3>
+                            <p>Registre vendas com nome do cliente para começar a acompanhar a inteligência de clientes.</p>
+                            <a href="{{ url_for('nova_venda') }}" class="btn btn--primary btn--sm" style="margin-top: 12px;">
+                                <i class="fas fa-plus"></i> Nova Venda
+                            </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+<style>
+/* ===== CLIENT INTELLIGENCE STYLES ===== */
+
+/* KPI Cards */
+.ci-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.ci-kpi {
+    background: var(--surface-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    transition: var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+.ci-kpi:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.ci-kpi__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.ci-kpi__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ci-kpi__label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 500;
+}
+
+.ci-kpi__value {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+/* Insights Section */
+.ci-insights-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.ci-insights-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.ci-insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.ci-insight-card {
+    background: var(--surface-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+    border-left: 3px solid var(--border-primary);
+    transition: var(--transition-fast);
+}
+
+.ci-insight-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.ci-insight-card--success { border-left-color: var(--success); }
+.ci-insight-card--warning { border-left-color: var(--warning); }
+.ci-insight-card--danger { border-left-color: var(--danger); }
+.ci-insight-card--info { border-left-color: var(--info); }
+
+.ci-insight-card__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.ci-insight-card--success .ci-insight-card__icon { background: rgba(16,185,129,0.1); color: var(--success); }
+.ci-insight-card--warning .ci-insight-card__icon { background: rgba(245,158,11,0.1); color: var(--warning); }
+.ci-insight-card--danger .ci-insight-card__icon { background: rgba(239,68,68,0.1); color: var(--danger); }
+.ci-insight-card--info .ci-insight-card__icon { background: rgba(59,130,246,0.1); color: var(--info); }
+
+.ci-insight-card__title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+}
+
+.ci-insight-card__msg {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Filters */
+.ci-filters {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    flex-wrap: wrap;
+}
+
+.ci-filters__label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-right: var(--spacing-xs);
+}
+
+.ci-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--surface-primary);
+    border: 1px solid var(--border-primary);
+    text-decoration: none;
+    transition: var(--transition-fast);
+    cursor: pointer;
+}
+
+.ci-filter-btn:hover {
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+    background: var(--surface-hover);
+}
+
+.ci-filter-btn--active {
+    background: var(--primary) !important;
+    color: white !important;
+    border-color: var(--primary) !important;
+}
+
+.ci-filter-btn--vip.ci-filter-btn--active { background: var(--success) !important; border-color: var(--success) !important; }
+.ci-filter-btn--inativo.ci-filter-btn--active { background: var(--danger) !important; border-color: var(--danger) !important; }
+.ci-filter-btn--regular.ci-filter-btn--active { background: var(--info) !important; border-color: var(--info) !important; }
+.ci-filter-btn--esporadico.ci-filter-btn--active { background: var(--warning) !important; border-color: var(--warning) !important; }
+
+/* Table */
+.ci-table-wrapper {
+    background: var(--surface-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.ci-table { margin: 0; }
+
+.ci-cell-name {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    font-weight: 500;
+}
+
+.ci-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: white;
+    flex-shrink: 0;
+    background: var(--primary);
+}
+
+.ci-avatar--vip { background: var(--success); }
+.ci-avatar--regular { background: var(--info); }
+.ci-avatar--esporadico { background: var(--warning); }
+.ci-avatar--inativo { background: var(--danger); opacity: 0.7; }
+
+/* Badges */
+.ci-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+
+.ci-badge--vip {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+}
+
+.ci-badge--regular {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--info);
+}
+
+.ci-badge--esporadico {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--warning);
+}
+
+.ci-badge--inativo {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--danger);
+}
+
+/* Score bar */
+.ci-score {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 100px;
+}
+
+.ci-score__number {
+    font-weight: 700;
+    font-size: 0.85rem;
+    min-width: 24px;
+    text-align: right;
+    color: var(--text-primary);
+    font-family: 'Poppins', sans-serif;
+}
+
+.ci-score__bar {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-accent);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid var(--border-secondary);
+    min-width: 60px;
+}
+
+.ci-score__fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ci-score__fill--hot { background: var(--success); }
+.ci-score__fill--warm { background: var(--info); }
+.ci-score__fill--cool { background: var(--warning); }
+.ci-score__fill--cold { background: var(--danger); }
+
+/* Compras count */
+.ci-compras {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--info);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* Recência */
+.ci-recencia {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.ci-recencia--warning { color: var(--warning); font-weight: 500; }
+.ci-recencia--danger { color: var(--danger); font-weight: 600; }
+
+/* Insight tip */
+.ci-insight-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.3;
+    max-width: 220px;
+}
+
+.ci-insight-tip i {
+    color: var(--warning);
+    margin-top: 2px;
+    flex-shrink: 0;
+    font-size: 0.7rem;
+}
+
+.ci-insight-tip__text {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Empty state */
+.ci-empty {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.ci-empty__icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    color: var(--text-muted);
+}
+
+.ci-empty h3 {
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+}
+
+.ci-empty p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .ci-table th:nth-child(8),
+    .ci-table td:nth-child(8) {
+        display: none;
+    }
+}
+
+@media (max-width: 900px) {
+    .ci-table th:nth-child(6),
+    .ci-table td:nth-child(6) {
+        display: none;
+    }
+    .ci-kpis {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+
+<script>
+    // Theme support
+    window.addEventListener('load', function() {
+        if (typeof updateThemeIcon === 'function') updateThemeIcon();
+    });
+
+    function toggleDropdown(event) {
+        event.stopPropagation();
+        const dropdown = document.getElementById('userDropdown');
+        if (dropdown) {
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+    }
+
+    document.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('userDropdown');
+        if (dropdown && !event.target.closest('.dropdown-menu')) {
+            dropdown.style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Cognix - Inteligência em Gestão</title>
+</head>
+<body>
+    <nav><h1>🚀 Sistema de Gestão Simples</h1></nav>
+    
+    <div class="container">
+        <div class="dashboard">
+            <div class="card">
+                <h3>Vendas Hoje</h3>
+                <p>R$ {{ vendas_hoje }}</p>
+            </div>
+            <div class="card warning">
+                <h3>Alertas de Estoque</h3>
+                <p>2 itens acabando</p>
+            </div>
+        </div>
+
+        <section>
+            <h2><i class="fas fa-box" style="margin-right: 8px;"></i>Controle de Estoque</h2>
+            <table>
+                <tr><th>Produto</th><th>Qtd</th><th>Preço</th><th>Ação</th></tr>
+                {% for p in produtos %}
+                <tr>
+                    <td>{{ p[1] }}</td>
+                    <td>{{ p[2] }}</td>
+                    <td>R$ {{ p[3] }}</td>
+                    <td>
+                        <form action="/vender" method="post">
+                            <input type="hidden" name="id" value="{{ p[0] }}">
+                            <button type="submit" class="btn-venda">Registrar Venda</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </section>
+    </div>
+</body>
+</html>

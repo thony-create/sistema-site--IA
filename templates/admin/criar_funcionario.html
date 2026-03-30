@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Funcionário - Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="layout">
+        {% include 'components/sidebar.html' %}
+        
+        <div class="layout__main">
+            {% include 'components/header.html' %}
+            
+            <div class="layout__content">
+                <div class="container" style="max-width: 600px;">
+                    <h1>Criar Funcionário</h1>
+                    
+                    <form method="POST" style="background: var(--card); border-radius: 12px; padding: 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; font-weight: 500; color: var(--text); margin-bottom: 8px;">Usuário *</label>
+                            <select name="usuario_id" required style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px;">
+                                <option value="">-- Selecione um usuário --</option>
+                                {% for user in usuarios %}
+                                    <option value="{{ user[0] }}">{{ user[1] }} ({{ user[2] }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; font-weight: 500; color: var(--text); margin-bottom: 8px;">Cargo *</label>
+                            <input type="text" name="cargo" required style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px;">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div>
+                                <label style="display: block; font-weight: 500; color: var(--text); margin-bottom: 8px;">Salário (R$)</label>
+                                <input type="number" name="salario" step="0.01" min="0" style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 500; color: var(--text); margin-bottom: 8px;">Comissão (%)</label>
+                                <input type="number" name="comissao" step="0.01" min="0" max="100" style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px;">
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 12px;">
+                            <button type="submit" class="btn btn-primary" style="flex: 1;">
+                                Criar Funcionário
+                            </button>
+                            <a href="{{ url_for('admin.funcionarios') }}" class="btn btn-secondary" style="flex: 1; text-align: center; text-decoration: none;">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

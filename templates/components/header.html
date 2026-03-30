@@ -1,0 +1,245 @@
+<!-- Header minimalista - apenas ícones e usuário -->
+<header class="layout__header layout__header--slim">
+    <div class="header">
+        <div class="header__left">
+            <span class="header__breadcrumb">
+                <i class="fas fa-home" style="font-size: 0.8rem;"></i>
+                <span class="header__breadcrumb-sep">/</span>
+                <span class="header__breadcrumb-page">
+                    {% if request.endpoint == 'dashboard' %}
+                        Painel Principal
+                    {% elif request.endpoint == 'chat' %}
+                        Assistente IA
+                    {% elif request.endpoint == 'estoque' %}
+                        Inventário
+                    {% elif request.endpoint == 'vendas' %}
+                        Transações
+                    {% elif request.endpoint == 'funcionarios' %}
+                        Equipe
+                    {% elif request.endpoint == 'relatorios' %}
+                        Relatórios
+                    {% elif request.endpoint == 'despesas' %}
+                        Despesas
+                    {% elif request.endpoint == 'clientes' %}
+                        Clientes
+                    {% else %}
+                        {{ request.endpoint | replace('_', ' ') | title }}
+                    {% endif %}
+                </span>
+            </span>
+        </div>
+        
+        <div class="header__right">
+            <!-- Theme Toggle -->
+            <button class="header__icon-btn" onclick="toggleDarkMode()" title="Alternar tema escuro/claro">
+                <i class="fas fa-moon"></i>
+            </button>
+            
+            <!-- Notificações -->
+            <button class="header__icon-btn header__icon-btn--notif" title="Notificações">
+                <i class="fas fa-bell"></i>
+            </button>
+
+            <!-- Separador -->
+            <div class="header__separator"></div>
+            
+            <!-- Perfil do Usuário -->
+            <div class="header__user">
+                <div class="header__user-info">
+                    <span class="header__user-name">{{ session.get('user_email', 'Usuário') }}</span>
+                    <span class="header__user-role">
+                        {% if session.get('user_tipo') == 'admin' %}
+                            Admin
+                        {% elif session.get('user_tipo') == 'gerente' %}
+                            Gerente
+                        {% else %}
+                            Funcionário
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="header__avatar">
+                    {{ session.get('user_email', 'U')[0].upper() }}
+                </div>
+                
+                <!-- Dropdown Menu -->
+                <div class="dropdown-menu">
+                    <button class="header__icon-btn" onclick="toggleDropdown(event)" title="Menu">
+                        <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                    </button>
+                    <div id="userDropdown" class="dropdown-menu__list">
+                        <a href="{{ url_for('auth.perfil') }}" class="dropdown-menu__item">
+                            <i class="fas fa-user"></i>
+                            <span>Meu Perfil</span>
+                        </a>
+                        {% if session.get('user_tipo') == 'admin' %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="dropdown-menu__item">
+                            <i class="fas fa-cog"></i>
+                            <span>Painel Admin</span>
+                        </a>
+                        {% endif %}
+                        {% if session.get('user_tipo') in ['admin', 'gerente'] %}
+                        <a href="{{ url_for('historico_logs') }}" class="dropdown-menu__item">
+                            <i class="fas fa-list"></i>
+                            <span>Histórico</span>
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('auth.logout') }}" class="dropdown-menu__item dropdown-menu__item--danger">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Sair</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<style>
+/* ===== HEADER MINIMALISTA ===== */
+.layout__header--slim {
+    padding: var(--spacing-sm) var(--spacing-lg);
+}
+
+/* Breadcrumb */
+.header__breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.header__breadcrumb i {
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
+.header__breadcrumb-sep {
+    color: var(--border-hover);
+    font-weight: 300;
+}
+
+.header__breadcrumb-page {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Icon buttons */
+.header__icon-btn {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+    padding: 6px 8px;
+    border-radius: var(--radius-sm);
+    position: relative;
+}
+
+.header__icon-btn:hover {
+    color: var(--primary);
+    background: rgba(16, 185, 129, 0.08);
+}
+
+/* Separador vertical */
+.header__separator {
+    width: 1px;
+    height: 24px;
+    background: var(--border-primary);
+}
+
+/* User info */
+.header__user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+}
+
+.header__user-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.header__user-role {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--primary);
+    line-height: 1.2;
+}
+
+.header__avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-menu__list {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: var(--card);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    min-width: 200px;
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.dropdown-menu__list.active {
+    display: block;
+}
+
+.dropdown-menu__item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-secondary);
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.dropdown-menu__item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-menu__item:hover {
+    background: var(--surface-hover);
+    color: var(--primary);
+}
+
+.dropdown-menu__item--danger:hover {
+    background: rgba(239, 68, 68, 0.08);
+    color: var(--danger);
+}
+</style>
+
+<script>
+function toggleDropdown(event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById('userDropdown');
+    dropdown.classList.toggle('active');
+    
+    document.addEventListener('click', function closeDropdown() {
+        dropdown.classList.remove('active');
+        document.removeEventListener('click', closeDropdown);
+    });
+}
+</script>

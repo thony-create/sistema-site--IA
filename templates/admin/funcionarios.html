@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Funcionários - Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="layout">
+        {% include 'components/sidebar.html' %}
+        
+        <div class="layout__main">
+            {% include 'components/header.html' %}
+            
+            <div class="layout__content">
+                <div class="container">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                        <h1>
+                            <i class="fas fa-briefcase"></i> Gestão de Funcionários
+                        </h1>
+                        <a href="{{ url_for('admin.criar_funcionario') }}" class="btn btn-primary" style="text-decoration: none;">
+                            <i class="fas fa-plus"></i> Novo Funcionário
+                        </a>
+                    </div>
+                    
+                    <div style="background: var(--card); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden;">
+                        {% if funcionarios %}
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: var(--card-light); border-bottom: 1px solid #e2e8f0;">
+                                        <th style="padding: 16px; text-align: left; font-weight: 600; color: var(--text);">Nome</th>
+                                        <th style="padding: 16px; text-align: left; font-weight: 600; color: var(--text);">Cargo</th>
+                                        <th style="padding: 16px; text-align: left; font-weight: 600; color: var(--text);">Usuário</th>
+                                        <th style="padding: 16px; text-align: right; font-weight: 600; color: var(--text);">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for func in funcionarios %}
+                                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                                            <td style="padding: 16px; font-weight: 500; color: var(--text);">{{ func[1] }}</td>
+                                            <td style="padding: 16px; color: var(--text-secondary);">{{ func[2] }}</td>
+                                            <td style="padding: 16px; color: var(--text-secondary);">{{ func[3] }}</td>
+                                            <td style="padding: 16px; text-align: right;">
+                                                <a href="{{ url_for('admin.editar_funcionario', func_id=func[0]) }}" class="btn-icon" style="background: #e0e7ff; color: #4f46e5; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-size: 12px;">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <div style="padding: 60px 20px; text-align: center;">
+                                <p style="color: var(--text-secondary);">Nenhum funcionário cadastrado.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

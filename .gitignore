@@ -1,0 +1,56 @@
+# Ambiente virtual
+venv/
+env/
+ENV/
+__pycache__/
+
+# Banco de dados SQLite
+*.db
+*.sqlite
+*.sqlite3
+gestao_empresarial.db
+
+# Arquivos gerados por IDE
+.vscode/
+.idea/
+*.py[cod]
+*$py.class
+*.so
+
+# Caches
+__pycache__/
+*.egg-info/
+.pytest_cache/
+
+# Variáveis de ambiente
+.env
+.env.local
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Arquivos temporários
+*.tmp
+*.bak
+*~
+
+# PIP
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Cobertura
+htmlcov/
+.coverage
+
+# Build
+dist/
+build/
+
+# Node (se usar frontend tooling)
+node_modules/
+npm-debug.log

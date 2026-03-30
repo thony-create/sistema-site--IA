@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Usuário - Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="layout">
+        {% include 'components/sidebar.html' %}
+        
+        <div class="layout__main">
+            {% include 'components/header.html' %}
+            
+            <div class="layout__content">
+                <div class="container" style="max-width: 600px;">
+                    <h1>Editar Usuário</h1>
+                    
+                    <form method="POST" style="background: var(--card); border-radius: 12px; padding: 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; font-weight: 500; color: var(--text); margin-bottom: 8px;">Nome *</label>
+                            <input type="text" name="nome" value="{{ usuario[1] }}" required style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; font-weight: 500; color: var(--text); margin-bottom: 8px;">Email *</label>
+                            <input type="email" name="email" value="{{ usuario[2] }}" required style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; font-weight: 500; color: var(--text); margin-bottom: 8px;">Tipo *</label>
+                            <select name="tipo" required style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px;">
+                                <option value="admin" {% if usuario[3] == 'admin' %}selected{% endif %}>Administrador</option>
+                                <option value="gerente" {% if usuario[3] == 'gerente' %}selected{% endif %}>Gerente</option>
+                                <option value="funcionario" {% if usuario[3] == 'funcionario' %}selected{% endif %}>Funcionário</option>
+                            </select>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" name="ativo" value="1" {% if usuario[4] %}checked{% endif %} style="cursor: pointer;">
+                                <span style="font-weight: 500; color: var(--text);">Ativo</span>
+                            </label>
+                        </div>
+                        
+                        <div style="display: flex; gap: 12px;">
+                            <button type="submit" class="btn btn-primary" style="flex: 1;">
+                                Atualizar Usuário
+                            </button>
+                            <a href="{{ url_for('admin.usuarios') }}" class="btn btn-secondary" style="flex: 1; text-align: center; text-decoration: none;">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Venda - Cognix</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo/cognix_icon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="layout">
+        {% include 'components/sidebar.html' %}
+        
+        <div class="layout__main">
+            {% include 'components/header.html' %}
+            
+            <div class="layout__content">
+                <div class="container" style="max-width: 700px;">
+                    <h1>Registrar Nova Venda</h1>
+                    
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert--{{ category }}">
+                                    <div class="alert__icon">
+                                        <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                                    </div>
+                                    <div>{{ message }}</div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <form method="POST" style="background: var(--card); border-radius: 12px; padding: 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; font-weight: 500; color: var(--text); margin-bottom: 8px;">Nome do Cliente</label>
+                            <input type="text" name="cliente_nome" placeholder="Opcional - será salvo como 'Cliente Padrão' se vazio" style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="color: var(--text); margin: 20px 0 12px 0;">Produtos</h3>
+                            <div id="produtos-container" style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; max-height: 300px; overflow-y: auto;">
+                                {% if produtos %}
+                                    {% for produto in produtos %}
+                                        <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 12px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;">
+                                            <div>
+                                                <label style="display: flex; align-items: center; cursor: pointer; gap: 8px;">
+                                                    <input type="checkbox" name="produto_id" value="{{ produto[0] }}" style="cursor: pointer;">
+                                                    <span>{{ produto[1] }} - R$ {{ "%.2f"|format(produto[2]) }}</span>
+                                                </label>
+                                                <small style="color: var(--text-secondary); margin-left: 28px;">Estoque: {{ produto[3] }}</small>
+                                            </div>
+                                            <div>
+                                                <input type="number" name="quantidade" min="1" max="{{ produto[3] }}" value="1" placeholder="Qtd" style="width: 70px; padding: 6px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 13px;" data-produto-id="{{ produto[0] }}">
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <p style="color: var(--text-secondary); text-align: center;">Nenhum produto disponível</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 12px;">
+                            <button type="submit" class="btn btn-primary" style="flex: 1;">
+                                Registrar Venda
+                            </button>
+                            <a href="{{ url_for('vendas') }}" class="btn btn-secondary" style="flex: 1; text-align: center; text-decoration: none;">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

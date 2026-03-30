@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estoque - Cognix</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo/cognix_icon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="layout">
+        {% include 'components/sidebar.html' %}
+        
+        <div class="layout__main">
+            {% include 'components/header.html' %}
+            
+            <div class="layout__content">
+                <div class="container">
+                    <div class="page-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-xl);">
+                            <h1 class="page-section__title">
+                                <div class="page-section__title-icon">
+                                    <i class="fas fa-box"></i>
+                                </div>
+                                Gestão de Estoque
+                            </h1>
+                            <a href="{{ url_for('adicionar_produto') }}" class="btn btn--primary">
+                                <i class="fas fa-plus"></i> Adicionar Produto
+                            </a>
+                        </div>
+                        
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert--{{ category }}">
+                                        <div class="alert__icon">
+                                            <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                                        </div>
+                                        <div class="alert__content">
+                                            <div>{{ message }}</div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        {% if produtos %}
+                            <div class="table-wrapper">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Produto</th>
+                                            <th>Quantidade</th>
+                                            <th>Preço</th>
+                                            <th>Categoria</th>
+                                            <th>Valor Total</th>
+                                            <th style="text-align: center;">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for produto in produtos %}
+                                            <tr style="transition: background 0.2s;" onmouseover="this.style.background='var(--card-light)'" onmouseout="this.style.background=''">
+                                                <td>
+                                                    <span style="font-weight: 500; color: var(--text);">{{ produto[1] }}</span>
+                                                    {% if produto[2] < 10 %}
+                                                        <span style="display: inline-block; margin-left: 8px; background: rgba(239,68,68,0.15); color: var(--danger); padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.03em; vertical-align: middle;">
+                                                            <i class="fas fa-exclamation-triangle" style="margin-right: 3px; font-size: 10px;"></i>Estoque baixo
+                                                        </span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <span style="background: {% if produto[2] < 10 %}rgba(239,68,68,0.15); color: var(--danger){% else %}rgba(34,197,94,0.15); color: var(--primary){% endif %}; display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+                                                        {{ produto[2] }} un
+                                                    </span>
+                                                </td>
+                                                <td style="color: var(--text);">R$ {{ "%.2f"|format(produto[3]) }}</td>
+                                                <td>
+                                                    <span style="background: rgba(56,189,248,0.15); color: var(--info); display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+                                                        {{ produto[4] or 'Geral' }}
+                                                    </span>
+                                                </td>
+                                                <td style="font-weight: 600; color: var(--text);">
+                                                    R$ {{ "%.2f"|format(produto[2] * produto[3]) }}
+                                                </td>
+                                                <td style="text-align: center;">
+                                                    <a href="{{ url_for('editar_produto', produto_id=produto[0]) }}" class="btn btn--sm btn--ghost" style="margin-right: var(--spacing-sm);">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <form method="POST" action="{{ url_for('deletar_produto', produto_id=produto[0]) }}" style="display: inline;" onsubmit="return confirm('Tem certeza?');">
+                                                        <button type="submit" class="btn btn--sm btn--ghost" style="color: var(--danger);">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="table-wrapper" style="padding: 60px 20px; text-align: center;">
+                                <div style="font-size: 48px; margin-bottom: 12px; color: var(--text-muted);"><i class="fas fa-inbox"></i></div>
+                                <h3 style="color: var(--text); margin: 0 0 var(--spacing-md) 0;">Nenhum produto cadastrado</h3>
+                                <p style="color: var(--text-secondary);">Comece adicionando produtos ao seu estoque.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

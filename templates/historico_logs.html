@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs - Cognix</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo/cognix_icon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="layout">
+        {% include 'components/sidebar.html' %}
+        
+        <div class="layout__main">
+            {% include 'components/header.html' %}
+            
+            <div class="layout__content">
+                <div class="container">
+                    <h1>
+                        <i class="fas fa-history"></i> Histórico de Ações
+                    </h1>
+                    
+                    <div style="background: var(--card); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden;">
+                        {% if logs %}
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: var(--card-light); border-bottom: 1px solid #e2e8f0;">
+                                        <th style="padding: 16px; text-align: left; font-weight: 600; color: var(--text);">Ação</th>
+                                        <th style="padding: 16px; text-align: left; font-weight: 600; color: var(--text);">Tabela</th>
+                                        <th style="padding: 16px; text-align: left; font-weight: 600; color: var(--text);">Descrição</th>
+                                        <th style="padding: 16px; text-align: left; font-weight: 600; color: var(--text);">Responsável</th>
+                                        <th style="padding: 16px; text-align: left; font-weight: 600; color: var(--text);">Data</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in logs %}
+                                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                                            <td style="padding: 16px;">
+                                                {% if log[1] == 'CRIAR' %}
+                                                    <span style="background: #d1fae5; color: #065f46; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;">➕ {{ log[1] }}</span>
+                                                {% elif log[1] == 'ATUALIZAR' %}
+                                                    <span style="background: #dbeafe; color: #0c4a6e; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;">✏️ {{ log[1] }}</span>
+                                                {% elif log[1] == 'DELETAR' %}
+                                                    <span style="background: #fee2e2; color: #7f1d1d; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;"><i class="fas fa-trash" style="margin-right: 4px;"></i>{{ log[1] }}</span>
+                                                {% else %}
+                                                    <span style="background: #fef3c7; color: #78350f; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;">❓ {{ log[1] }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td style="padding: 16px; color: var(--text-secondary); font-size: 13px;">
+                                                {{ log[2] }}
+                                            </td>
+                                            <td style="padding: 16px; color: var(--text);">
+                                                {{ log[3] }}
+                                            </td>
+                                            <td style="padding: 16px; color: var(--text-secondary);">
+                                                {{ log[5] or 'Sistema' }}
+                                            </td>
+                                            <td style="padding: 16px; color: var(--text-secondary); font-size: 13px;">
+                                                {{ log[6] | default('--') }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            
+                            <!-- Paginação -->
+                            {% if total_paginas > 1 %}
+                                <div style="padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+                                    {% if pagina_atual > 1 %}
+                                        <a href="{{ url_for('historico_logs', pagina=pagina_atual-1) }}" class="btn btn-secondary" style="text-decoration: none;">← Anterior</a>
+                                    {% endif %}
+                                    
+                                    <span style="margin: 0 12px; color: var(--text-secondary);">
+                                        Página {{ pagina_atual }} de {{ total_paginas }}
+                                    </span>
+                                    
+                                    {% if pagina_atual < total_paginas %}
+                                        <a href="{{ url_for('historico_logs', pagina=pagina_atual+1) }}" class="btn btn-secondary" style="text-decoration: none;">Próxima →</a>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div style="padding: 60px 20px; text-align: center;">
+                                <div style="font-size: 48px; margin-bottom: 12px; color: var(--gray-300);"><i class="fas fa-list"></i></div>
+                                <h3 style="color: var(--text); margin: 0 0 8px 0;">Sem registro de ações</h3>
+                                <p style="color: var(--text-secondary); margin: 0;">As ações serão registradas aqui.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

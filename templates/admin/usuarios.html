@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Usuários - Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="layout">
+        {% include 'components/sidebar.html' %}
+        
+        <div class="layout__main">
+            {% include 'components/header.html' %}
+            
+            <div class="layout__content">
+                <div class="container">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                        <h1>
+                            <i class="fas fa-users"></i> Gestão de Usuários
+                        </h1>
+                        <a href="{{ url_for('admin.criar_usuario') }}" class="btn btn-primary" style="text-decoration: none;">
+                            <i class="fas fa-plus"></i> Novo Usuário
+                        </a>
+                    </div>
+                    
+                    <div style="background: var(--card); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden;">
+                        {% if usuarios %}
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: var(--card-light); border-bottom: 1px solid #e2e8f0;">
+                                        <th style="padding: 16px; text-align: left; font-weight: 600; color: var(--text);">Nome</th>
+                                        <th style="padding: 16px; text-align: left; font-weight: 600; color: var(--text);">Email</th>
+                                        <th style="padding: 16px; text-align: left; font-weight: 600; color: var(--text);">Tipo</th>
+                                        <th style="padding: 16px; text-align: left; font-weight: 600; color: var(--text);">Status</th>
+                                        <th style="padding: 16px; text-align: right; font-weight: 600; color: var(--text);">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in usuarios %}
+                                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                                            <td style="padding: 16px; font-weight: 500; color: var(--text);">{{ user[1] }}</td>
+                                            <td style="padding: 16px; color: var(--text-secondary);">{{ user[2] }}</td>
+                                            <td style="padding: 16px;">
+                                                <span style="background: {% if user[3] == 'admin' %}#fee2e2{% elif user[3] == 'gerente' %}#dbeafe{% else %}#d1fae5{% endif %}; color: {% if user[3] == 'admin' %}#dc2626{% elif user[3] == 'gerente' %}#2563eb{% else %}#059669{% endif %}; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                                                    {{ user[3].title() }}
+                                                </span>
+                                            </td>
+                                            <td style="padding: 16px;">
+                                                <span style="background: {% if user[4] %}#d1fae5{% else %}#fee2e2{% endif %}; color: {% if user[4] %}#059669{% else %}#dc2626{% endif %}; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                                                    {% if user[4] %}Ativo{% else %}Inativo{% endif %}
+                                                </span>
+                                            </td>
+                                            <td style="padding: 16px; text-align: right;">
+                                                <a href="{{ url_for('admin.editar_usuario', user_id=user[0]) }}" class="btn-icon" style="background: #e0e7ff; color: #4f46e5; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; margin-right: 8px;">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <div style="padding: 60px 20px; text-align: center;">
+                                <p style="color: var(--text-secondary);">Nenhum usuário cadastrado.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

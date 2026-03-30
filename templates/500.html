@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 - Erro Interno - Cognix</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo/cognix_icon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); padding: 20px;">
+        <div style="text-align: center; background: var(--card); border-radius: 12px; padding: 60px 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+            <div style="font-size: 120px; margin-bottom: 20px; line-height: 1; color: var(--warning);"><i class="fas fa-exclamation-triangle"></i></div>
+            <h1 style="font-size: 48px; color: var(--text); margin: 0 0 12px 0;">500</h1>
+            <h2 style="font-size: 24px; color: var(--text); margin: 0 0 12px 0;">Erro no Servidor</h2>
+            <p style="color: var(--text-secondary); font-size: 16px; margin: 0 0 30px 0;">
+                Desculpe, ocorreu um erro ao processar sua solicitação. Por favor, tente novamente mais tarde.
+            </p>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary" style="display: inline-block; text-decoration: none;">
+                ← Voltar ao Dashboard
+            </a>
+        </div>
+    </div>
+</body>
+</html>

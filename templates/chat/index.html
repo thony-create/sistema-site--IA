@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zyra - Consultora Inteligente</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+    <style>
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 80px);
+            background: var(--bg);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: var(--bg);
+        }
+        
+        .chat-message {
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .chat-message.user {
+            justify-content: flex-end;
+        }
+        
+        .chat-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+        
+        .chat-message.assistant .chat-bubble {
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--primary);
+            border-radius: 2px 12px 12px 12px;
+        }
+        
+        .chat-message.user .chat-bubble {
+            background: var(--primary);
+            color: var(--text);
+            font-weight: 500;
+            border-radius: 12px 2px 12px 12px;
+        }
+        
+        /* Structured response styles */
+        .chat-response-structured {
+            background: var(--card-light);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 4px 0;
+        }
+        
+        .chat-response-list {
+            list-style: none;
+            padding: 0;
+            margin: 8px 0;
+        }
+        
+        .chat-response-list li {
+            padding: 6px 0 6px 24px;
+            position: relative;
+            color: var(--text);
+        }
+        
+        .chat-response-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .chat-response-number {
+            display: inline-block;
+            background: var(--primary);
+            color: var(--text);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            margin-right: 8px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .chat-response-highlight {
+            background: rgba(34, 197, 94, 0.15);
+            border-left: 3px solid var(--primary);
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 4px 0;
+            font-weight: 500;
+            color: var(--text);
+        }
+        
+        .chat-input-area {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            background: var(--card);
+        }
+        
+        .chat-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 10px;
+        }
+        
+        .chat-clear-btn {
+            padding: 6px 12px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        
+        .chat-clear-btn:hover {
+            opacity: 0.85;
+            transform: scale(1.05);
+        }
+        
+        .chat-suggestions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+            flex: 1;
+        }
+        
+        .suggestion-btn {
+            padding: 10px 12px;
+            background: var(--card-light);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .suggestion-btn:hover {
+            background: var(--primary);
+            color: var(--text);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .chat-input-form {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        
+        .chat-input {
+            flex: 1;
+            min-height: 44px;
+            max-height: 120px;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+            background: var(--bg);
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            resize: none;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+            box-sizing: border-box;
+            display: block;
+        }
+        
+        .chat-input::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        .chat-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+        }
+        
+        .chat-send-btn {
+            padding: 10px 16px;
+            background: var(--primary);
+            color: var(--text);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .chat-send-btn:hover {
+            opacity: 0.85;
+            transform: scale(1.05);
+        }
+        
+        .chat-send-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+        
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            text-align: center;
+            gap: 8px;
+        }
+        
+        .empty-state-icon {
+            font-size: 52px;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .empty-state h2 {
+            color: var(--text);
+            margin: 0;
+        }
+
+        .empty-state p {
+            color: var(--text-secondary);
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+            opacity: 0.6;
+        }
+        
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+            30% { opacity: 1; transform: translateY(-8px); }
+        }
+        
+        .chat-timestamp {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        
+        @media (max-width: 768px) {
+            .chat-bubble { max-width: 90%; }
+            .chat-suggestions { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+            .chat-toolbar { flex-direction: column; }
+            .chat-clear-btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        {% include 'components/sidebar.html' %}
+        
+        <div class="layout__main">
+            {% include 'components/header.html' %}
+            
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    {% if historico %}
+                        {% for msg in historico %}
+                            <div class="chat-message user">
+                                <div class="chat-bubble">
+                                    {{ msg['pergunta'] }}
+                                    <div class="chat-timestamp">{{ msg['data_criacao'] | default('') }}</div>
+                                </div>
+                            </div>
+                            <div class="chat-message assistant">
+                                <div class="chat-bubble" id="response-{{ loop.index }}">
+                                    {{ msg['resposta'] }}
+                                    <div class="chat-timestamp">{{ msg['data_criacao'] | default('') }}</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <h2>Olá, {{ user['nome'] }}! Aqui é a Zyra.</h2>
+                            <p>Sua consultora de negócios inteligente. Como posso ajudar com suas vendas, estoque ou clientes hoje?</p>
+                            <p style="font-size: 0.8rem; opacity: 0.7;">Ex: "quanto vendi hoje?", "produto mais vendido", "estoque baixo"</p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="chat-input-area">
+                    <div class="chat-toolbar">
+                        <div class="chat-suggestions" id="suggestions">
+                            <!-- Suggestions loaded dynamically -->
+                        </div>
+                        <button class="chat-clear-btn" id="clearBtn" title="Limpar conversa">
+                            <i class="fas fa-trash"></i>
+                            <span>Limpar</span>
+                        </button>
+                    </div>
+                    
+                    <form class="chat-input-form" id="chatForm">
+                        <textarea
+                            class="chat-input"
+                            id="chatInput"
+                            placeholder="Perguntar para a Zyra...
+(Enter envia · Shift+Enter quebra linha)"
+                            rows="1"
+                            autocomplete="off"
+                        ></textarea>
+                        <button type="submit" class="chat-send-btn" id="sendBtn" title="Enviar (Enter)">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function formatResponse(texto) {
+            if (!texto) return '';
+            let formatted = texto;
+            
+            // Highlight money values and key metrics
+            formatted = formatted.replace(/(R\$\s*[\d.,]+)/g, '<strong style="color:var(--primary)">$1</strong>');
+            
+            // Handle list items
+            if (formatted.includes('\n-') || formatted.includes('\n•')) {
+                const lines = formatted.split('\n');
+                let listItems = [];
+                let output = [];
+                lines.forEach(line => {
+                    if (/^\s*[-•]\s/.test(line)) {
+                        listItems.push(line.replace(/^\s*[-•]\s/, '').trim());
+                    } else {
+                        if (listItems.length > 0) {
+                            output.push('<ul class="chat-response-list">');
+                            listItems.forEach(item => output.push(`<li>${item}</li>`));
+                            output.push('</ul>');
+                            listItems = [];
+                        }
+                        if (line.trim()) output.push(line);
+                    }
+                });
+                if (listItems.length > 0) {
+                    output.push('<ul class="chat-response-list">');
+                    listItems.forEach(item => output.push(`<li>${item}</li>`));
+                    output.push('</ul>');
+                }
+                formatted = output.join('\n');
+            }
+            return formatted;
+        }
+        
+        async function loadSuggestions() {
+            try {
+                const res = await fetch('{{ url_for("chat.obter_sugestoes") }}', { credentials: 'same-origin' });
+                const data = await res.json();
+                const container = document.getElementById('suggestions');
+                container.innerHTML = '';
+                if (data.sugestoes && data.sugestoes.length > 0) {
+                    data.sugestoes.slice(0, 4).forEach(sugg => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'suggestion-btn';
+                        btn.title = sugg.pergunta;
+                        const iconMap = {'bar-chart': 'chart-bar', 'trophy': 'trophy', 'alert-triangle': 'exclamation-triangle', 'packages': 'box', 'trending-up': 'trending-up', 'users': 'users', 'calendar': 'calendar', 'lightbulb': 'lightbulb'};
+                        const icon = iconMap[sugg.icon] || sugg.icon;
+                        btn.innerHTML = `<i class="fas fa-${icon}"></i> ${sugg.titulo}`;
+                        btn.onclick = () => {
+                            document.getElementById('chatInput').value = sugg.pergunta;
+                            document.getElementById('chatInput').focus();
+                        };
+                        container.appendChild(btn);
+                    });
+                }
+            } catch(e) { console.error('Erro sugestões:', e); }
+        }
+        
+        async function clearChat() {
+            if (!confirm('Tem certeza que deseja limpar toda a conversa?')) return;
+            try {
+                const res = await fetch('{{ url_for("chat.limpar_historico") }}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'same-origin'
+                });
+                if (res.ok) {
+                    document.getElementById('chatMessages').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon"><i class="fas fa-robot"></i></div>
+                            <h2>Olá, {{ user['nome'] }}!</h2>
+                            <p>Conversa limpa. Faça uma pergunta para começar.</p>
+                        </div>`;
+                }
+            } catch(e) { alert('Erro ao limpar: ' + e.message); }
+        }
+        
+        // ── Auto-resize textarea ──────────────────────────────────────────
+        function autoResize(el) {
+            el.style.height = 'auto';
+            const maxH = 120;
+            el.style.height = Math.min(el.scrollHeight, maxH) + 'px';
+            el.style.overflowY = el.scrollHeight > maxH ? 'auto' : 'hidden';
+        }
+
+        function resetInput(el) {
+            el.value = '';
+            el.style.height = '44px';
+            el.style.overflowY = 'hidden';
+        }
+
+        const chatInput = document.getElementById('chatInput');
+
+        // Grow as user types
+        chatInput.addEventListener('input', () => autoResize(chatInput));
+
+        // Enter = send, Shift+Enter = newline
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('chatForm').requestSubmit();
+            }
+        });
+
+        // ── Form submit ───────────────────────────────────────────────────
+        document.getElementById('chatForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pergunta = chatInput.value.trim();
+            if (!pergunta) return;
+            
+            const chatMessages = document.getElementById('chatMessages');
+            const sendBtn = document.getElementById('sendBtn');
+            const emptyState = chatMessages.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+            
+            sendBtn.disabled = true;
+            // Render newlines in user bubble
+            const perguntaHtml = pergunta.replace(/\n/g, '<br>');
+            
+            const userDiv = document.createElement('div');
+            userDiv.className = 'chat-message user';
+            userDiv.innerHTML = `<div class="chat-bubble">${perguntaHtml}</div>`;
+            chatMessages.appendChild(userDiv);
+            
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'chat-message assistant';
+            loadingDiv.id = 'loadingMsg';
+            loadingDiv.innerHTML = `<div class="chat-bubble"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+            chatMessages.appendChild(loadingDiv);
+            
+            // Clear and reset input immediately after capture
+            resetInput(chatInput);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            try {
+                const res = await fetch('{{ url_for("chat.enviar_pergunta") }}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'same-origin',
+                    body: JSON.stringify({pergunta})
+                });
+                
+                const data = await res.json();
+                document.getElementById('loadingMsg').remove();
+                
+                if (!res.ok) throw new Error(data.erro || `Erro HTTP ${res.status}`);
+                
+                const assistantDiv = document.createElement('div');
+                assistantDiv.className = 'chat-message assistant';
+                assistantDiv.innerHTML = `<div class="chat-bubble">${formatResponse(data.resposta)}</div>`;
+                chatMessages.appendChild(assistantDiv);
+            } catch(error) {
+                const lm = document.getElementById('loadingMsg');
+                if (lm) lm.remove();
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'chat-message assistant';
+                errorDiv.innerHTML = `<div class="chat-bubble" style="border-left-color:var(--danger);color:var(--danger);">⚠️ ${error.message}</div>`;
+                chatMessages.appendChild(errorDiv);
+            } finally {
+                sendBtn.disabled = false;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                chatInput.focus();
+            }
+        });
+        
+        document.getElementById('clearBtn').addEventListener('click', clearChat);
+        
+        window.addEventListener('load', () => {
+            loadSuggestions();
+            const cm = document.getElementById('chatMessages');
+            // Init textarea height
+            autoResize(chatInput);
+            setTimeout(() => { cm.scrollTop = cm.scrollHeight; }, 100);
+        });
+    </script>
+</body>
+</html>
