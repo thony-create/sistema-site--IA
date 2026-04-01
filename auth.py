@@ -2,9 +2,8 @@ from flask import Blueprint, render_template, request, session, redirect, url_fo
 from functools import wraps
 from models import User, Log, get_db_context
 from datetime import datetime, timedelta
-
 auth_bp = Blueprint('auth', __name__)
-
+#teste para commit
 def get_user_field(user, field, default=None):
     """Safely get field from sqlite3.Row object"""
     if user is None:
